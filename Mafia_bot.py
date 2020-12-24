@@ -2,6 +2,8 @@ import discord
 from discord.ext.commands import Bot
 import json
 
+intents = discord.Intents.all()
+
 class MyClient(discord.Client):
     async def on_ready(self):
         global servers
@@ -21,7 +23,6 @@ class MyClient(discord.Client):
                     continue
             if hi == False:
                 servers["servers"].append({"id": i.id, "users": [{"id": 8}], "jobs": []})
-                #with open('users.json', 'w') as f:
                 f = open('servers.json', 'w')
                 f.write(json.dumps(servers))
             for h in servers["servers"]:
@@ -30,7 +31,7 @@ class MyClient(discord.Client):
                     break
             
             """All of the above is fine."""
-            
+            print(i.members)
             for h in i.members:
                 for l in (servers["servers"][thing])["users"]:
                     hi = False
@@ -39,10 +40,11 @@ class MyClient(discord.Client):
                         break
                 if hi == False:
                     (servers["servers"][thing])["users"].append({"id": h.id, "money": 2000})
-                    #with open('users.json', 'w') as f:
                     f = open('servers.json', 'w')
                     f.write(json.dumps(servers))
-        print(client.guilds[0].members)
+        print(client.guilds[1].members)
+        print(client.guilds[1].channels)
+        await client.guilds[1].channels[2].send("Bot now online!")
         #print(users)
         
     async def on_message(self, message):
@@ -50,6 +52,7 @@ class MyClient(discord.Client):
         for h in servers["servers"]:
             if int(message.guild.id) == int(h["id"]):
                 thing = servers["servers"].index(h)
+                print(thing)
                 break
         
         if message.author == self.user:
@@ -79,14 +82,17 @@ class MyClient(discord.Client):
                     for i in servers["servers"][thing]["users"]:
                         if i["id"] == int(to):
                             i["money"] += float(amount)
-                self.update(users)
+                self.update(servers)
             except Exception as e:
-                await message.channel.send('Please make sure to put both user and amount of pay (e.g. "mafia_pay <USER> <AMOUNT>")!')
+                await message.channel.send('Please make sure to put both user and amount of pay (e.g. "m!pay <USER> <AMOUNT>")!')
                 print(e)
 
         if "m!money" in message.content:
+            #print("Money check!!")
             for i in servers["servers"][thing]["users"]:
+                #print(message.author.id)
                 if i["id"] == int(message.author.id):
+                    #print("Money has been checked.")
                     await message.channel.send("$" + str(i["money"]))
 
         if "m!help" in message.content:
@@ -98,11 +104,12 @@ class MyClient(discord.Client):
                 if i["id"] == int(message.author.id):
                     await message.channel.send("$" + str(i["money"]))
 """
-          
+
+    @staticmethod           
     def update(us):
         f = open('servers.json', 'w')
         print(us)
         f.write(json.dumps(us))
 
-client = MyClient()
+client = MyClient(intents=intents)
 client.run("<TOKEN>")
